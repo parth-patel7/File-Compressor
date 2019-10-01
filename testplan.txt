@@ -1,0 +1,174 @@
+CS 214: Systems Programming, Spring 2019 
+Assignment 2: File Compression
+
+Authors - Dev Patel (drp145) and Parth Patel (ptp26)
+
+This File in particular explains in detail about how our program operates to compress/decompress file or group of files. It also explains in detail how we tested our code to be fully functional according to the guidelines of the assignment. 
+
+--> What is the purpose of the assignment?
+	
+	-To exercise our file manipulation capabilities to first generate Huffman codes for a series of files and then to compress and decompress files with a program made Huffman codebook.
+
+--> Main Algorithm:
+
+	-Before starting any option such as compress, decompress or building dictionary, we need to find the list of files to be used for the activity. The getFilePathsFromDir function in fileCompressor.c file reads the user input, and then scans the dictionary to collect all the files to be processed in an array.
+
+--> To Parse a uncompressed file:
+
+	-The uncompressed file is read character by character, until a Whitespace character is read. We treat whitespace character as the delimiter. The list of words generated from file contain the whitespace characters such as space and tabs also.
+
+--> To Build a Huffman codebook:
+
+	-In order to build a codebook, we need to create a Huffman tree of all unique words across files. So, We start from scanning all the files across directories, and then create a binary tree in which each node contains a word and the count of the word. Once the complete tree is created, we convert that to minHeap, and that is being transformed to a Huffman tree. By using the Huffman tree, we can decide a code for every word. We store this mapping of a code from a word into a dictionary, whose underlying data-structure is a binary tree. Once Dictionary is prepared, we visit each node of tree, and write its code and corresponding word to the file.
+
+--> To handle a group of files and directories in a particular directory:
+
+	-When the particular directory is used to make a Huffman Codebook our code iterates through the given directory to find further path to read all the files one by one and adding it to Codebook, if it comes across a directory within a directory then our code enters that directories and then read the text files in that directory. Similarly, our code functions to iterate through all the text files in the given directory and all the directories within that particular directory.
+
+--> To Compress a group of files:
+
+	-Using the list of files, we compress each file one by one using the codebook given. The codebook is read into the dictionary described above. Then the uncompressed file is read and a list of words is created.. Those words are then written to compressed file by decoding their code using the dictionary.
+
+--> To UnCompress a group of files:
+
+	-To uncompress a file, we start reading file character by character. We read a character and check if it exists in Huffman codebook, if not the next character is read, and the complete 2 character string is searched on codebook. We keep on reading more characters if corresponding text is not found in codebook. Once a code is found in codebook, corresponding text is written to uncompressed file.
+
+
+
+Test Cases:
+
+	- Following are the different command line interfaces we tested for the file named abc.txt. The output of followings are according to the guidelines of the assignment.
+
+0) ./fileCompressor -b abc.txt
+-Output :
+
+Processing: abc.txt
+Processed 1 files.
+Saved Codebook HuffmanCodebook successfully
+
+1) ./fileCompressor -b -c abc.txt
+-Output :
+
+Exactly one flag out of b, c & d can be set.
+./fileCompressor [-R] <flag> <path or file> |codebook|
+Valid Flags: b, c, d
+-R: recursive
+Codebook is required if flag is c or d.
+
+2) ./fileCompressor -b -c abc.txt HuffmanCodeBook
+-Output :
+
+Exactly one flag out of b, c & d can be set.
+./fileCompressor [-R] <flag> <path or file> |codebook|
+Valid Flags: b, c, d
+-R: recursive
+Codebook is required if flag is c or d
+
+3) ./fileCompressor -b -d abc.txt HuffmanCodeBook
+-Output :
+
+Exactly one flag out of b, c & d can be set.
+./fileCompressor [-R] <flag> <path or file> |codebook|
+Valid Flags: b, c, d
+-R: recursive
+Codebook is required if flag is c or d
+
+4) ./fileCompressor -R -d abc.txt HuffmanCodeBook
+-Output :
+
+Starting to Read all the files or the file paths in dictionaries
+Decompressed 0 files successfully using HuffmanCodeBook codebook.
+
+5) ./fileCompressor -R -c abc.txt HuffmanCodeBook
+-Output :
+
+Starting to Read all the files or the file paths in dictionaries
+Compressing: abc.txt
+Compressed 1 files successfully using HuffmanCodeBook codebook.
+
+6) ./fileCompressor -R -b ./directory (Running on my test case directory named "hi")
+-Output :
+
+Starting to Read all the files or the file paths in dictionaries
+Processing: ./hi/testplan.txt
+Processing: ./hi/readme.txt
+Processing: ./hi/testcases.txt
+Processing: ./hi/hello/testplan.txt
+Processing: ./hi/hello/testcases.txt
+Processing: ./hi/hello/readme.txt
+Processed 6 files.
+Saved Codebook HuffmanCodebook successfully
+
+
+7) ./fileCompressor -b -R ./directory (Running on my test case directory named "hi")
+-Output :
+
+Starting to Read all the files or the file paths in dictionaries
+Processing: ./hi/testplan.txt
+Processing: ./hi/readme.txt
+Processing: ./hi/testcases.txt
+Processing: ./hi/hello/testplan.txt
+Processing: ./hi/hello/testcases.txt
+Processing: ./hi/hello/readme.txt
+Processed 6 files.
+Saved Codebook HuffmanCodebook successfully
+
+8) ./fileCompressor -b ./directory (Running on my test case directory named "hi")
+-Output :
+
+(In this case we didn't give -R flag so it only ran only through the files in ./hi and not its following paths.)
+Starting to Read all the files or the file paths in dictionaries
+Processing: ./hi/testplan.txt
+Processing: ./hi/readme.txt
+Processing: ./hi/testcases.txt
+Processed 3 files.
+Saved Codebook HuffmanCodebook successfully
+
+9) ./fileCompressor -c -R ./directory HuffmanCodeBook (Running on my test case directory named "hi")
+-Output :
+
+Starting to Read all the files or the file paths in dictionaries
+Compressing: ./hi/testplan.txt
+Compressing: ./hi/readme.txt
+Compressing: ./hi/testcases.txt
+Compressing: ./hi/hello/testplan.txt
+Compressing: ./hi/hello/testcases.txt
+Compressing: ./hi/hello/readme.txt
+Compressed 6 files successfully using HuffmanCodebook codebook.
+
+10) ./fileCompressor -R -c ./directory HuffmanCodeBook (Running on my test case directory named "hi")
+-Output :
+
+Starting to Read all the files or the file paths in dictionaries
+Compressing: ./hi/testplan.txt
+Compressing: ./hi/readme.txt
+Compressing: ./hi/testcases.txt
+Compressing: ./hi/hello/testplan.txt
+Compressing: ./hi/hello/testcases.txt
+Compressing: ./hi/hello/readme.txt
+Compressed 6 files successfully using HuffmanCodebook codebook.
+
+11) ./fileCompressor -d -R ./directory HuffmanCodeBook (Running on my test case directory named "hi")
+-Output :
+
+Starting to Read all the files or the file paths in dictionaries
+Decompressing: ./hi/hello/testplan.txt.hcz
+Decompressing: ./hi/hello/testcases.txt.hcz
+Decompressing: ./hi/hello/readme.txt.hcz
+Decompressing: ./hi/testplan.txt.hcz
+Decompressing: ./hi/readme.txt.hcz
+Decompressing: ./hi/testcases.txt.hcz
+Decompressed 6 files successfully using HuffmanCodebook codebook.
+
+
+12) ./fileCompressor -R -d ./directory HuffmanCodeBook (Running on my test case directory named "hi")
+-Output :
+
+Starting to Read all the files or the file paths in dictionaries
+Decompressing: ./hi/hello/testplan.txt.hcz
+Decompressing: ./hi/hello/testcases.txt.hcz
+Decompressing: ./hi/hello/readme.txt.hcz
+Decompressing: ./hi/testplan.txt.hcz
+Decompressing: ./hi/readme.txt.hcz
+Decompressing: ./hi/testcases.txt.hcz
+Decompressed 6 files successfully using HuffmanCodebook codebook.
